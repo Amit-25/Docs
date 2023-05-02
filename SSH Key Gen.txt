@@ -1,0 +1,14 @@
+1- To generate the key
+ssh-keygen -t rsa -C "MyEmailAddress" -f ~/.ssh/id_rsa -P ""
+
+
+2- To see the key on console
+tail ~/.ssh/id_rsa.pub
+
+==================================
+
+
+python -m venv ./venv
+venv\Scripts\activate
+pip install django
+django-admin startproject store .

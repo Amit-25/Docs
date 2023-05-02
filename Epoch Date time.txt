@@ -1,0 +1,10 @@
+CREATE TABLE `epoch_time` (
+   `id` int NOT NULL AUTO_INCREMENT,
+   `msg` varchar(100) NOT NULL DEFAULT '-',
+   `epoch_time` int NOT NULL DEFAULT '0',
+   PRIMARY KEY (`id`)
+ );
+
+INSERT INTO `dump`.`epoch_time`(`id`, `msg`, `epoch_time`) VALUES (1,'Testing Epoch Time', UNIX_TIMESTAMP(now()));
+
+select id, msg, FROM_UNIXTIME(epoch_time) as dt from epoch_time;

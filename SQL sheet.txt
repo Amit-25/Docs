@@ -1,0 +1,763 @@
+ FOLDER-1
+========
+SQL is case insensitive language but orders matter 	(SELECT-->FROM-->WHERE-->ORDER BY-->LIMIT)
+--------------------------------------
+								    	(SELECT-->FROM-->WHERE-->GROUP BY--->ORDER BY-->LIMIT)
+
+									(SELECT-->FROM-->JOIN-->GROUP BY--->WITH ROLLUP--->HAVING--->ORDER BY)
+									
+									(SELECT-->FROM-->JOIN-->WHERE-->GROUP BY--->HAVING--->ORDER BY)
+
+                           					(SELECT-->FROM-->JOIN table_name ON condition-->WHERE)
+
+
+FROM      : Select Table
+WHERE     : Filter data
+ORDER BY  : Sort data
+GROUP BY  : Combine rows base on Group by condition
+------------------------
+
+*COMPARISON OPERATOR* : (>, >=, <, <=, =, !=(<> not equal))  where price > 100
+=====================
+
+*ADD MULTIPLE CONDITION*: (AND, OR, NOT)
+=========================
+1- AND will evaluate first.
+2- select * from customers where NOT (birth_date='1990-01-01 or points > 1000)'
+
+*IN*: (IN or =)
+====
+1- where state = 'AY' or state = 'LKO'
+2- where state IN ('AY', 'LKO')
+
+
+*BETWEEN*: Inclusive(range of values) 
+==========
+1- where price >= 1000 and price <= 2000
+2- where price between 1000 and 3000
+
+------------------------------------------------------------------------------------------------------------
+
+FOLDER-2
+========
+
+LIKE vs REGEXP(More Powerful when searching for string):
+======================================================
+
+1- String having length 2, and ending with y Ex: ay,by... 
+===========================================================
+select * from customer where last_name like '_y'.
+
+2- Ending with sen
+================
+ select *   
+ from customers 
+ -- where last_name like '%sen';
+
+ select * 
+ from customers 
+    where last_name regexp '^sen'              (-- $ Ending with sen, ^ Begin with sen)
+ -- where last_name regexp 'sen$ | las | doe'  (-- regexp with multiple OR condition)
+ -- where last_name regexp '[gim]e'            (-- all record, before e, g/i/m that come)
+ -- where last_name regexp '[a-h]e'            (-- we can also provide range)
+
+
+3- Find record having NULL value or no data(USE IS NULL, (IS NOT NULL))
+==========================================================================
+select * from customers where phone IS NULL
+
+
+4- Order by
+============
+SELECT * from customers order by first_name desc, last_name asc;
+
+5- LIMIT (Skip first 6 customers and find next 3 customers)
+============================================================
+Select * from customers limit 6,3
+
+=================================================================================================================================================
+                                                         
+6- INNER JOIN OR JOIN
+=====================
+
+Joining 2 tables:
+------------------
+
+SELECT order_id,
+       p.product_id,
+	   name,
+       quantity,
+       o.unit_price 
+FROM order_items o 
+JOIN products p 
+ON 
+o.order_id = p.product_id;
+
+
+7- Joining tables from 2 different db
+=====================================
+select * from sql_store.order_items o
+	JOIN sql_inventory.products p      //db_name.tableName
+	ON o.product_id = p.product_id
+
+	
+8- SELF JOIN(JOIN inside same table)
+====================================
+Table name would be the same, just change the alias name and condition
+
+SELECT e.employee_id, e.first_name, m.first_name as manager
+	from 
+	employees e JOIN
+    	employees m ON
+    	e.employee_id = m.reports_to;
+
+
+9- Joining multiple tables(more than 2)
+=======================================
+SELECT  p.payment_id as payment_id, p.date as payment_date,
+              i.invoice_date,
+              c.name as client_name,
+              pm.name from payments p
+JOIN  payment_methods pm ON p.payment_method = pm.payment_method_id
+JOIN  invoices i ON p.invoice_id = i.invoice_id
+JOIN  clients c ON p.client_id = c.client_id
+
+
+10- Compound JOIN (When you have more than 1 PK in table use that,  just add 'AND' condition)
+=============================================================================================
+SELECT  p.payment_id as payment_id, p.date as payment_date,
+              i.invoice_date,
+              c.name as client_name,
+              pm.name from payments p
+JOIN  payment_methods pm ON (p.payment_id = pm.payment_method_id) AND (p.payment_id = i.invoice_id)
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+FOLDER 3:
+=========
+
+11- Outer Join: Also return the result where condition is not matched. Poistion of tables matter
+    (Left outer join/ Left join, right outer join or right outer join)
+   ====================================================================
+
+SELECT o.order_id, c.first_name,c.customer_id
+from customers c
+LEFT JOIN orders o
+ON o.order_id = c.customer_id
+
+
+12- The Using Clause: If you have same column name in joins condition than better to use ' JOIN table_name USING(column_name)'
+================
+
+SELECT o.order_id, c.first_name
+from customers c
+JOIN orders o
+-- ON o.customer_id = c.customer_id
+using(customer_id)
+
+
+13- Natural JOIN : DB automatically picks the column name and join base on that.
+================
+
+SELECT o.order_id, c.first_name from orders o
+NATURAL JOIN customers c
+
+
+14- Cross Join
+==============
+select * from orders cross join products
+
+15- UNIONS: Use to combine rows (while joins use to combine columns) Number of column in select statement must be equal
+========== 
+SELECT name from customers
+UNION
+SELECT shipper_name from shippers
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+FOLDER 4
+=========
+
+16: Insert Multiple Rows
+========================
+insert into shippers(name) 
+            values('Amit1'),
+                  ('Amit2'),
+		      ('Amit3');
+
+17: Insert Hierarichal Tables(if u insert in More than 1 table) --:> Use LAST_INSERTI_ID() MySQL function
+==============================
+STEP:1 insert into shippers(name) values('Amit4')  (Suppose new insert id is 15)
+STEP:2 insert into shipped(shiperrId, shipperDate) values (LAST_INSERT_ID(), '2023-01-16'), (LAST_INSERT_ID(), '2023-01-17')
+
+18: Copying a data from 1 table to another
+==========================================
+
+STEP:- Create a new table & copy  it: create table new_table as select * from old_table_name   (Mark pk and auto increment externally, mysql will not do)
+-------------------------------------
+
+OR
+If u want to insert few or selected records only then use sub query
+-----------------------------------------------------------------
+INSERT into table_name
+select * from order where date > '2019-01-01'
+
+
+18: Using Subqueries in UPDATE
+==============================
+update customer set profit = profit + 500 where customer_id 
+IN
+(select client_id from client where city in ('NY', 'AY'))
+
+
+19: Delete Rows : Delete from invoices where invoice_id  in (1,2,3)
+===============
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+FOLDER:5
+========
+
+
+20: Aggregate Function: (Return Maximum Value)
+======================
+
+Select count(distinct client_id) from invoice;
+
+
+21: GROUP BY: select clien_id, sum(invoices) from invoices group_by client_id
+============
+
+22: Having: Filter data after GROUP By only
+===========
+
+select pament_date, sum(amount) as payment_amount from payment
+group by amount 
+HAVING payment_amount > 500;
+
+
+23: ROLL UP: Use with Aggregate Func SUM(that must be present in query) :  It will sum all the values getting from SUM()
+============
+select client_idsum(amount) as amount from payments
+GROUP BY client 
+WITH ROLLUP
+
+
+
+24: Sub Squeries:
+==================
+select * from employees where salary > (
+ 	select AVG(salary) from empoyees 
+)
+
+
+25: ALL: Use all or max()
+=======
+select * from invoices where invoices_total > ( select max(invoices_total) from invoices where client_id=3)
+
+0r
+
+select * from invoices where invoices_total > ALL( select invoices_total from invoices where client_id=3)
+
+
+
+26: ANY: Either use =ANY or IN
+=======
+
+
+27: EXISTS (Performance wise better than IN)
+=============================================
+select * from clients c where EXISTS(
+	select DISTINCT cliet_id from invoices where client_id = c.client_id
+)
+
+OR
+
+select * from clients where client_id IN(
+	select DISTINCT cliet_id from invoices
+)
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+FOLDER :6 
+
+
+28:Subqueries in Select clause
+================================
+select invoice_id, invoice_total, (select AVG(invoice_total) from invoices) as invoice_avg, invoice_total-(select invoice_avg)  from invoices
+
+
+29: Subqueries in FROM clause(must give alias name)
+===================================================
+select * from (select invoice_id, invoice_total from invoice) as summary where invoice_total > 1000;
+
+
+
+30: NUMERIC FUNCTION
+=====================
+select ROUND(5.7322, 2)  --> 5.73
+select TRUNCATE(7.12313, 2) ->>> 7.12
+select CEILING(5.52) 		---> 6
+select FLOOR(5.52)            ----> 5
+select Abs(-5.52)             ----> 5
+select rand()                ----> Generate random number b/w 0 and 1
+
+
+31: STRING FUNCTION
+=====================
+select LENGTH('SKY')  		--> 3
+select UPPER('sky')     	->>> SKY
+select LOWER('Sky') 		---> sky
+select TRIM('  SKY  ')        ----> SKY
+select LEFT('Amit singh', 3)  ----> Amit
+select substring('Amit Singh', 3,8)   ----> t Sin
+select locate('m', 'Amit')     ----> 2
+select replace('Amit', 'mi', 'it')  --> Aiit
+select concat('first_name', 'last)' --> first_namelast
+
+
+32: Date Function
+=================
+select now(), curdate(), curtime()    ->> Give current date & time, current date, current time
+select YEAR/MONTH/DAY/HOUR/MINUTE( now())
+select dayname/monthname(now())           ---> Monday/may
+select EXTRACT( YEAR from now())          ---> 2023
+
+
+33: Date-Time format
+====================
+use  sql_store;
+SELECT  DATE_FORMAT(shipped_date, '%Y-%m-%d') as date from orders where order_id=2;
+SELECT  TIME_FORMAT(fromDate, '%H:%i %p') as time from orders where order_id=2;
+
+
+34: Calculation between DATE & TIME:
+=====================================
+select DATE_ADD(now(), INTERVAL 1 DAY/YEAR/MONTH)  ---> Return next day/year/month date from current date
+select DATE_ADD(now(), INTERVAL -1 DAY/YEAR/MONTH)  ---> Return Previous day/year/month date from current date
+select DATEDIFF('2019-01-12', '2019-01-15')         ---> 3
+
+
+35: IFNULL : If shipper Id is NULL, it will assignes as 'Not Assigned'
+==========
+select order_id, IFNULL(shipper_id, 'Not Assigned')  as shipper from orders;
+
+
+36: IF function
+===============
+select order_id, order_date,
+IF(YEAR(order_date) = YEAR(now()), 'Active', 'Archieved') as status
+from orders
+
+
+37: CASE: When You have multiple conditions (Instead of UNION, use CASE)
+===========================================
+select order_id,
+	CASE
+		WHEN YEAR(order_date) = YEAR(now())   THEN 'Active'
+		WHEN YEAR(order_date) = YEAR(now())-1 THEN 'Previous'
+		ELSE 'Future'
+	END as Year_Prediction
+from orders
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+FOLDER 7
+
+38: Creating Views(Virtual Table): While using the JOINS or SUB Queries if the queries will become complex, use views
+==================
+STEP 1- Create View view_name as
+  	select order_id, c.client_id, c.client_name
+	from orders JOIN client c Using(client_id)
+	group by c.name, c.client_id
+
+STEP 2- select * from view_name
+
+
+39: Alter or Drop Views:
+=======================
+1- Create or Replace View view_name as
+  	select order_id, c.client_id, c.client_name
+	from orders JOIN client c Using(client_id)
+	group by c.name, c.client_id
+
+
+2- DROP VIEW view_name
+
+
+40: Update Views
+=================
+If these function(Distinct, Aggregate, Group BY/Having, UNION) are not present then we can update/insert/delete the VIEWS
+
+
+41: WITH CHECK OPTION
+======================
+Create or Replace View view_name as
+  	select order_id, c.client_id, c.client_name
+	from orders JOIN client c Using(client_id)
+	group by c.name, c.client_id
+WITH CHECK OPTION
+
+
+
+------------------------------------------------------------------------------------
+ 					                                  USEFUL for Application development				
+
+
+42: Stored Procedures: is a db object that contain block of scquel code
+======================
+Benefits:  Store and Organise SQL, Faster, Data Security
+
+
+43: Create Store Procedure
+==========================
+Delimiter $$
+create procedure get_customer()
+	begin
+		select * from customers;
+	end $$
+Delimiter ;
+
+
+44: Dropping Stored Procedure: DROP Procedure if exists get_clients
+=============================
+
+
+45: Parameter
+=============
+create procedure get_customer( state char(2) )
+	begin
+		select * from customers c where c.state = state;
+	end $$
+Delimiter ;
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+FOLDER 8
+
+46: Parametr with default value
+===============================
+create procedure get_customer( state char(2) )
+	begin 
+		IF state is NULL THEN
+			select * from clients;
+		ELSE
+			select * from customers c where c.state = state;
+		END IF;
+	end $$
+Delimiter ;
+
+
+OR Better way
+-----------
+create procedure get_customer( state char(2) )
+	begin 
+		
+	 	select * from customers c where c.state = IFNULL(state, c.state);
+		
+	end $$
+Delimiter ;
+
+
+47: Parameter Validation in Args( useful while inserting or updating the data)
+================================
+Delimiter $$
+create procedure update_invoice( invoice_id int, invoice_total decimal,	invoice_date date)
+	Begin
+		IF invoice_total < 0 then
+			signal sqlstate '22003' set message_text = 'Invoice total must be greater than zero';
+		END IF;
+			update invoice_state i set invoice_total = i.invoice_total, invoice_date=i.invoice_date where i.invoice_id = invoice_id;
+		END $$
+Delimiter ;
+	
+
+48: Output Paramters (get data from store procedure)
+====================
+Delimiter $$
+create procedure update_invoice( invoice_id int, OUT invoice_total decimal,	OUT invoice_count INT)
+	Begin
+			select count(*) as count, sum(invoice_total) into invoice_count, invoice_total
+            from invoices i where i.invoices_id = invoice_id;
+	END $$
+Delimiter 
+
+
+49: Variables (when you have output param, these variables are stored in-memory)
+=============
+SET @var_name = 0;
+
+Local Variable
+--------------
+Delimiter $$
+create procedure risk_factor()
+	begin
+//declare must be first statement
+	  declare risk_factor decimal(5,2) default 0;
+        declare invoice_total decimal(5,2);
+        declare invoice_count int;
+        
+        select count(*), sum(invoice_total) into invoice_count, invoice_total from invoices;
+	
+        set risk_factor = invoice_total/invoice_count * 0.5;
+        select risk_factor;
+
+	end $$
+Delimiter ;
+
+
+50: Function: Return only single values, while store procedure returns multiple values(rows, columns)
+============
+Delimiter $$
+create function get_risk_factor
+(
+	client_id INT
+)
+returns integer
+Reads sql data
+	begin
+		declare risk_factor decimal(5,2) default 0;
+        declare invoice_total decimal(5,2);
+        declare invoice_count int;
+        
+        select count(*), sum(invoice_total) into invoice_count, invoice_total from invoices;
+	
+        set risk_factor = invoice_total/invoice_count * 0.5;
+        
+        return ifnull(risk_factor, 0);
+	end $$
+Delimiter ;
+
+select client_id, name, get_risk_factor as risk_factor from clients
+
+DROP FUNCION IF EXISTS get_risk_factor
+------------
+
+
+51: Triggers: A block of sql code that automatically executed after insert/update/delete statement
+============
+create trigger payment_after_insert
+	After insert on payments
+    FOR EACH ROW
+	begin
+		update invoices
+        set payment_total = payment_total + NEW.amount
+	  where invoice_id = NEW.invoice_id
+	end $$
+Delimiter ;
+
+
+52: View Triggers
+=================
+Show triggers
+
+
+53: Dropping Triggers
+=====================
+DROP Trigger if exists payment_after_insert
+
+
+54: USing Triggers for Audit : if you have multiple tables, then create multiple trigger.
+============================
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+FOLDER 9
+========
+
+
+55: Events: A task (or block of code) that executed according to you schedule like every day/week/ or at some given time
+==========
+Ex: Maintaing DB task, such as deleting staling data, copying a data to another table.
+
+1- Check whether event is ON or not
+-----------------------------------
+SHOW Variable like 'event%';
+SET Global event_scheduler = ON
+
+DELIMITER $$
+CREATE EVENT yearly_delete_stale_audit_data
+ON SCHEDULE
+	-- AT '2023-01-01'
+	EVERY 1 Year STARTS '2023-01-01' END '2025-01-01'
+DO BEGIN
+	DELETE from payment_audit 
+	where date < now()- Interval 1 Year    //In 2023, delete 2022 data
+END $$
+DELIMETER ;
+
+
+56: View Events- SHOW Events like 'yearly%';
+===============
+
+DROP EVENT IF EXISTS your_event_name;
+=========
+
+ALTER EVENT:
+==========
+DELIMITER $$
+ALTER EVENT yearly_delete_stale_audit_data
+ON SCHEDULE
+	-- AT '2023-01-01'
+	EVERY 1 month STARTS '2023-01-01' END '2025-01-01'
+DO BEGIN
+	DELETE from payment_audit 
+	where date < now()- Interval 1 Month    //In 2023, delete 2022 data
+END $$
+DELIMETER ;
+
+
+
+57: Transactions: A group of SQL statement that represents a single unit of work/task
+================
+
+CREATE TRANSACION
+-----------------
+
+START TRANSACTION
+	Insert into order(customer_id, order_id, amount, date) values (1,2,10,'2023-01-01');
+      Insert into order_item(order_id, customer_id, order_id, date) values (LAST_INSERTIF(),1,2,'2023-01-01');
+ROLLBACK/ COMMIT
+
+
+
+58: Concurrency and Locking : If 2 or more user access the db as the same time. Concurrency is a problem when One user if modifying the data while other is 
+============================= reading it
+
+
+59: SET ISOLATION LEVEL
+=======================
+SHOW Variables like 'transaction_iso%';     //default in MYSQL
+SET SESSION(optional) 
+Transaction Isolation Level Serializable
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+FOLDER :11
+==========
+
+Data Types: String, Numeric, Data and Time, Blob, Spatial
+-----------
+
+60: String:
+==========
+char(x)    : Fixed Length
+varchar(x) : max length 65,536 -> 16 KB    adresss
+MediumText : max length 16 MB    JSON Object
+LongText   : max length 4 GB   videos
+TinyText   : max 255 bytes
+Text       : max 16 KB (prefer to use varchar over text because varchar is index based)
+
+
+61: Integer
+===========
+TinyInt   		1B or 8 bit    [-128, 127]
+Unsigned Tinyint 	     		   [0,255]
+smallint 		2B   		   [-32k, 32k]
+MediumInt		3B		   [-8M, 8M]
+Int			4B 		   [-2B, 2B]
+BigInt		8B		   [-9Z, 9Z]
+
+
+62: Fixed Point and Floating Point
+==================================
+DEC/NUMERIC/FIXED/DECIMAL(3,2) 
+
+FLOAT 4B/ DOUBLE 8B : Do not store exact values;  
+
+
+63: Boolean
+===========
+bool/boolean  - True 1 /False 0
+
+
+64: ENUM and Set : ENUM is bad try to avoid it becose ENUM updation is costly
+=================
+size ENUM('small', 'medium', 'large')   Restrict the column with these values only
+
+65: Date & Time
+================
+Date
+Time
+Datetime  8b
+timestmap 4b
+Year 
+
+
+66: BLOB (Img/Videos/PDF)
+========
+Tinyblob    255b
+blob        65KB
+Mediumblob  16MB
+Longblob	4GB
+
+
+67: JSON: JSON_SET, JSON_REMOVE, JSON_OBJECT, JSON_EXTRACT 
+========
+properties JSON
+
+
+update products set properties = '{ 'name': 'Amit', 'age':18}' where id = 1'
+
+or
+
+update products set properties = JSON_object('name','Amit, 'age':18) where id -1
+
+
+select product_id, JSON_EXTRACT(properties, '$.name') as name from products where id = 1;
+
+select product_id, properties ->> '$.name' as name from products where id = 1;
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Folder: 12
+==========
+
+68: Data Modeling
+=================
+Step: 1- Understading of requirements
+Step: 2- Build a Conceptual Model (ER, UML) Tools: Microsoft visio, draw.io, Lucidcharts	
+Step: 3- Build a Logical Model
+Step: 4- Build a Physical Model
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Folder: 13
+==========
+
+Normalization: is the process of revewing our db & ensures that there is no redundant or duplicate data inside the db by following 7 predefined rules(1NF, 2NF, 3NF are..)
+==============
+
+
+70: 1NF: Each Cell should have a single value and we cannot have repeated columns like tag1, tag2,... (difficult to scale in future)
+=======
+
+71: 2NF: Every table should describe one entity and every column in that table should describe that entity.
+========
+
+72: 3NF (Helps us in reduce data duplicacy and maintain data integrity): A column in a table should not be derived from other columns. (invoice, total_payment, 
+======== balance(remove))
+
+
